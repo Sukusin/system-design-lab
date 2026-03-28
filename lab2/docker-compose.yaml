@@ -1,0 +1,10 @@
+services:
+  api:
+    build: .
+    container_name: hotel-booking-api
+    ports:
+      - '8000:8000'
+    environment:
+      DB_PATH: /app/data/hotel_booking.db
+    volumes:
+      - ./data:/app/data

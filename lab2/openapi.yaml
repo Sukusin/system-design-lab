@@ -1,0 +1,638 @@
+openapi: 3.1.0
+info:
+  title: Hotel Booking REST API
+  description: REST API сервис для бронирования отелей. Реализованы пользователи,
+    отели, бронирования и JWT-аутентификация.
+  version: 1.0.0
+paths:
+  /auth/register:
+    post:
+      tags:
+      - Authentication
+      summary: Создание нового пользователя
+      operationId: register_user_auth_register_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '409':
+          description: Login already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /auth/login:
+    post:
+      tags:
+      - Authentication
+      summary: Логин пользователя и получение JWT токена
+      operationId: login_user_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /users/by-login/{login}:
+    get:
+      tags:
+      - Users
+      summary: Поиск пользователя по логину
+      operationId: get_user_by_login_users_by_login__login__get
+      parameters:
+      - name: login
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 3
+          maxLength: 50
+          examples:
+          - kirill_sokolov
+          title: Login
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /users/search:
+    get:
+      tags:
+      - Users
+      summary: Поиск пользователя по маске имени и фамилии
+      operationId: search_users_users_search_get
+      parameters:
+      - name: mask
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          title: Mask
+        example: Kir
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+                title: Response Search Users Users Search Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /hotels:
+    get:
+      tags:
+      - Hotels
+      summary: Получение списка отелей
+      operationId: list_hotels_hotels_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/HotelResponse'
+                type: array
+                title: Response List Hotels Hotels Get
+    post:
+      tags:
+      - Hotels
+      summary: Создание отеля
+      operationId: create_hotel_hotels_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HotelCreateRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HotelResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /hotels/search:
+    get:
+      tags:
+      - Hotels
+      summary: Поиск отелей по городу
+      operationId: search_hotels_by_city_hotels_search_get
+      parameters:
+      - name: city
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          title: City
+        example: Moscow
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HotelResponse'
+                title: Response Search Hotels By City Hotels Search Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /bookings:
+    post:
+      tags:
+      - Bookings
+      summary: Создание бронирования
+      operationId: create_booking_bookings_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreateRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Hotel not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: No available rooms for these dates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /users/{user_id}/bookings:
+    get:
+      tags:
+      - Bookings
+      summary: Получение бронирований пользователя
+      operationId: get_user_bookings_users__user_id__bookings_get
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: User Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingResponse'
+                title: Response Get User Bookings Users  User Id  Bookings Get
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /bookings/{booking_id}/cancel:
+    patch:
+      tags:
+      - Bookings
+      summary: Отмена бронирования
+      operationId: cancel_booking_bookings__booking_id__cancel_patch
+      parameters:
+      - name: booking_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Booking Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      tags:
+      - Health
+      summary: Root
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    BookingCreateRequest:
+      properties:
+        hotel_id:
+          type: integer
+          title: Hotel Id
+          example: 1
+        check_in:
+          type: string
+          format: date
+          title: Check In
+          example: '2026-04-10'
+        check_out:
+          type: string
+          format: date
+          title: Check Out
+          example: '2026-04-15'
+        guests:
+          type: integer
+          maximum: 10.0
+          minimum: 1.0
+          title: Guests
+          example: 2
+      type: object
+      required:
+      - hotel_id
+      - check_in
+      - check_out
+      - guests
+      title: BookingCreateRequest
+    BookingResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        user_id:
+          type: integer
+          title: User Id
+        hotel_id:
+          type: integer
+          title: Hotel Id
+        check_in:
+          type: string
+          format: date
+          title: Check In
+        check_out:
+          type: string
+          format: date
+          title: Check Out
+        guests:
+          type: integer
+          title: Guests
+        status:
+          type: string
+          enum:
+          - active
+          - cancelled
+          title: Status
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        cancelled_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Cancelled At
+      type: object
+      required:
+      - id
+      - user_id
+      - hotel_id
+      - check_in
+      - check_out
+      - guests
+      - status
+      - created_at
+      title: BookingResponse
+    ErrorResponse:
+      properties:
+        detail:
+          type: string
+          title: Detail
+          example: Resource not found
+      type: object
+      required:
+      - detail
+      title: ErrorResponse
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HotelCreateRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          minLength: 2
+          title: Name
+          example: 5 Start Hotel
+        city:
+          type: string
+          maxLength: 100
+          minLength: 2
+          title: City
+          example: Moscow
+        address:
+          type: string
+          maxLength: 255
+          minLength: 5
+          title: Address
+          example: Polevaya 5
+        stars:
+          type: integer
+          maximum: 5.0
+          minimum: 1.0
+          title: Stars
+          example: 5
+        rooms_total:
+          type: integer
+          maximum: 10000.0
+          minimum: 1.0
+          title: Rooms Total
+          example: 25
+      type: object
+      required:
+      - name
+      - city
+      - address
+      - stars
+      - rooms_total
+      title: HotelCreateRequest
+    HotelResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        city:
+          type: string
+          title: City
+        address:
+          type: string
+          title: Address
+        stars:
+          type: integer
+          title: Stars
+        rooms_total:
+          type: integer
+          title: Rooms Total
+        created_by:
+          type: integer
+          title: Created By
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - name
+      - city
+      - address
+      - stars
+      - rooms_total
+      - created_by
+      - created_at
+      title: HotelResponse
+    TokenResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        token_type:
+          type: string
+          title: Token Type
+          default: bearer
+      type: object
+      required:
+      - access_token
+      title: TokenResponse
+    UserLoginRequest:
+      properties:
+        login:
+          type: string
+          title: Login
+          example: kirill_sokolov
+        password:
+          type: string
+          title: Password
+          example: secret123
+      type: object
+      required:
+      - login
+      - password
+      title: UserLoginRequest
+    UserRegisterRequest:
+      properties:
+        login:
+          type: string
+          maxLength: 50
+          minLength: 3
+          title: Login
+          example: kirill_sokolov
+        password:
+          type: string
+          maxLength: 128
+          minLength: 6
+          title: Password
+          example: secret123
+        first_name:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: First Name
+          example: Kirill
+        last_name:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Last Name
+          example: Sokolov
+      type: object
+      required:
+      - login
+      - password
+      - first_name
+      - last_name
+      title: UserRegisterRequest
+    UserResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        login:
+          type: string
+          title: Login
+        first_name:
+          type: string
+          title: First Name
+        last_name:
+          type: string
+          title: Last Name
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - login
+      - first_name
+      - last_name
+      - created_at
+      title: UserResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
