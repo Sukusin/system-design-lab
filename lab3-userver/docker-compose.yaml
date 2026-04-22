@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:16
+    container_name: hotel-booking-db
+    environment:
+      POSTGRES_DB: hotel_booking
+      POSTGRES_USER: hotel_user
+      POSTGRES_PASSWORD: hotel_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U hotel_user -d hotel_booking']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: hotel-booking-api-userver
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '8000:8080'
+
+volumes:
+  postgres_data:

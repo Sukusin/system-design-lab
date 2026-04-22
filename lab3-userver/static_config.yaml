@@ -1,0 +1,87 @@
+components_manager:
+  task_processors:
+    main-task-processor:
+      worker_threads: 4
+    fs-task-processor:
+      worker_threads: 2
+
+  components:
+    server:
+      listener:
+        port: 8080
+        task_processor: main-task-processor
+
+    logging:
+      fs-task-processor: fs-task-processor
+      loggers:
+        default:
+          file_path: '@stdout'
+          level: info
+
+    dns-client:
+      fs-task-processor: fs-task-processor
+
+    testsuite-support:
+      testsuite-tasks-enabled: false
+
+    postgres-db:
+      dbconnection: postgresql://hotel_user:hotel_password@db:5432/hotel_booking
+      blocking_task_processor: fs-task-processor
+      dns_resolver: getaddrinfo
+
+    token-store: {}
+
+    handler-root:
+      path: /
+      method: GET
+      task_processor: main-task-processor
+
+    handler-register-user:
+      path: /auth/register
+      method: POST
+      task_processor: main-task-processor
+
+    handler-login:
+      path: /auth/login
+      method: POST
+      task_processor: main-task-processor
+
+    handler-user-by-login:
+      path: /users/by-login/{login}
+      method: GET
+      task_processor: main-task-processor
+
+    handler-user-search:
+      path: /users/search
+      method: GET
+      task_processor: main-task-processor
+
+    handler-create-hotel:
+      path: /hotels
+      method: POST
+      task_processor: main-task-processor
+
+    handler-list-hotels:
+      path: /hotels
+      method: GET
+      task_processor: main-task-processor
+
+    handler-search-hotels:
+      path: /hotels/search
+      method: GET
+      task_processor: main-task-processor
+
+    handler-create-booking:
+      path: /bookings
+      method: POST
+      task_processor: main-task-processor
+
+    handler-user-bookings:
+      path: /users/{user_id}/bookings
+      method: GET
+      task_processor: main-task-processor
+
+    handler-cancel-booking:
+      path: /bookings/{booking_id}/cancel
+      method: PATCH
+      task_processor: main-task-processor

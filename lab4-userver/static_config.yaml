@@ -1,0 +1,93 @@
+components_manager:
+  task_processors:
+    main-task-processor:
+      worker_threads: 4
+    fs-task-processor:
+      worker_threads: 2
+  default_task_processor: main-task-processor
+
+  components:
+    logging:
+      fs-task-processor: fs-task-processor
+      loggers:
+        default:
+          file_path: '@stderr'
+          level: info
+
+    server:
+      listener:
+        port: 8080
+        task_processor: main-task-processor
+      listener-monitor:
+        port: 8081
+        task_processor: main-task-processor
+
+    dns-client:
+      fs-task-processor: fs-task-processor
+
+    dynamic-config:
+      defaults: {}
+
+    testsuite-support:
+      testsuite-tasks-enabled: false
+
+    mongo-db:
+      dbconnection: mongodb://root:root@mongo:27017/hotel_booking_mongo?authSource=admin
+      dns_resolver: getaddrinfo
+
+    token-store: {}
+
+    handler-root:
+      path: /
+      method: GET
+      task_processor: main-task-processor
+
+    handler-register-user:
+      path: /auth/register
+      method: POST
+      task_processor: main-task-processor
+
+    handler-login:
+      path: /auth/login
+      method: POST
+      task_processor: main-task-processor
+
+    handler-user-by-login:
+      path: /users/by-login/{login}
+      method: GET
+      task_processor: main-task-processor
+
+    handler-user-search:
+      path: /users/search
+      method: GET
+      task_processor: main-task-processor
+
+    handler-create-hotel:
+      path: /hotels
+      method: POST
+      task_processor: main-task-processor
+
+    handler-list-hotels:
+      path: /hotels
+      method: GET
+      task_processor: main-task-processor
+
+    handler-search-hotels:
+      path: /hotels/search
+      method: GET
+      task_processor: main-task-processor
+
+    handler-create-booking:
+      path: /bookings
+      method: POST
+      task_processor: main-task-processor
+
+    handler-user-bookings:
+      path: /users/{user_id}/bookings
+      method: GET
+      task_processor: main-task-processor
+
+    handler-cancel-booking:
+      path: /bookings/{booking_id}/cancel
+      method: PATCH
+      task_processor: main-task-processor
