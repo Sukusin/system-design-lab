@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: hotel-booking-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: hotel_booking_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./validation.js:/docker-entrypoint-initdb.d/01_validation.js:ro
+      - ./data.js:/docker-entrypoint-initdb.d/02_data.js:ro
+
+  api:
+    build: .
+    container_name: hotel-booking-api-mongo
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://root:root@mongo:27017/?authSource=admin
+      MONGO_DB: hotel_booking_mongo
+    ports:
+      - "8000:8000"
+
+volumes:
+  mongo_data:
