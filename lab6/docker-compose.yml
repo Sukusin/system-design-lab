@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16
+    container_name: hotel-booking-hw06-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hotel_user
+      POSTGRES_PASSWORD: hotel_password
+      POSTGRES_DB: hotel_booking
+    ports:
+      - '5546:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U hotel_user -d hotel_booking']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: hotel-booking-hw06-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  api:
+    build: .
+    container_name: hotel-booking-hw06-api-userver
+    restart: unless-stopped
+    command: ['/service/hotel_booking_hw06_api_userver', '-c', '/service/static_config_api.yaml']
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - '8006:8080'
+      - '18086:8081'
+
+  consumer:
+    build: .
+    container_name: hotel-booking-hw06-consumer-userver
+    restart: unless-stopped
+    command: ['/service/hotel_booking_hw06_consumer_userver', '-c', '/service/static_config_consumer.yaml']
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  pg_data:
